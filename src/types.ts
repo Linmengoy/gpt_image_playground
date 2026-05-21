@@ -1,7 +1,7 @@
 // ===== 设置 =====
 
 export type ApiMode = 'images' | 'responses'
-export type BuiltInApiProvider = 'openai' | 'fal'
+export type BuiltInApiProvider = 'openai' | 'copse'
 export type ApiProvider = BuiltInApiProvider | string
 export type CustomProviderTemplate = 'http-image'
 
@@ -138,12 +138,6 @@ export interface TaskRecord {
   apiProfileName?: string
   /** 生成时使用的模型 ID */
   apiModel?: string
-  /** fal.ai 队列请求 ID，用于连接断开后的结果恢复 */
-  falRequestId?: string
-  /** fal.ai 队列 endpoint，用于连接断开后的状态和结果查询 */
-  falEndpoint?: string
-  /** fal.ai 任务连接断开后是否等待自动恢复 */
-  falRecoverable?: boolean
   /** 自定义异步服务商任务 ID，用于重启后继续查询结果 */
   customTaskId?: string
   /** 自定义异步任务是否等待自动恢复 */
@@ -263,24 +257,6 @@ export interface ResponsesApiResponse {
     moderation?: string
     n?: number
   }>
-}
-
-export interface FalImageFile {
-  url?: string
-  content_type?: string
-  file_name?: string
-  width?: number
-  height?: number
-  b64_json?: string
-  base64?: string
-  data?: string
-}
-
-export interface FalApiResponse {
-  images?: FalImageFile[]
-  image?: FalImageFile | string
-  url?: string
-  seed?: number
 }
 
 // ===== 导出数据 =====

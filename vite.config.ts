@@ -18,7 +18,7 @@ function loadDevProxyConfig() {
 }
 
 export default defineConfig(({ command }) => {
-  const devProxyConfig = command === 'serve' ? loadDevProxyConfig() : null
+  const devProxyConfig = command === 'serve' && process.env.NODE_ENV !== 'test' ? loadDevProxyConfig() : null
 
   return {
     plugins: [react()],

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  createDefaultFalProfile,
   createDefaultOpenAIProfile,
   DEFAULT_IMAGES_MODEL,
   DEFAULT_SETTINGS,
@@ -9,7 +8,7 @@ import {
 import { buildSettingsFromUrlParams, clearUrlSettingParams, hasUrlSettingParams } from './urlSettings'
 
 describe('URL settings params', () => {
-  it('creates and activates a new OpenAI profile for legacy URL params', () => {
+  it('creates and activates a new Copse profile for legacy URL params', () => {
     const current = normalizeSettings(DEFAULT_SETTINGS)
     const next = normalizeSettings({
       ...current,
@@ -20,14 +19,14 @@ describe('URL settings params', () => {
     expect(next.activeProfileId).not.toBe(current.activeProfileId)
     expect(next.profiles.find((profile) => profile.id === next.activeProfileId)).toMatchObject({
       name: 'URL 参数配置',
-      provider: 'openai',
+      provider: 'copse',
       baseUrl: 'https://api.example.com/v1',
       apiKey: 'test-key',
       model: DEFAULT_IMAGES_MODEL,
     })
   })
 
-  it('uses model from URL params for OpenAI profiles', () => {
+  it('uses model from URL params for Copse profiles', () => {
     const current = normalizeSettings(DEFAULT_SETTINGS)
     const next = normalizeSettings({
       ...current,
@@ -35,7 +34,7 @@ describe('URL settings params', () => {
     })
 
     expect(next.profiles.find((profile) => profile.id === next.activeProfileId)).toMatchObject({
-      provider: 'openai',
+      provider: 'copse',
       baseUrl: 'https://api.example.com/v1',
       apiKey: 'test-key',
       model: 'custom-image-model',
@@ -64,12 +63,28 @@ describe('URL settings params', () => {
     expect(next.activeProfileId).toBe(existingProfile.id)
   })
 
-  it('creates an OpenAI profile from legacy params even when fal is active', () => {
-    const falProfile = createDefaultFalProfile({ id: 'fal-active', apiKey: 'fal-key' })
+  it('creates a Copse profile from legacy params even when a custom provider is active', () => {
+    const customProvider = {
+      id: 'custom-active',
+      name: 'Custom Active',
+      submit: {
+        path: 'images/generations',
+        method: 'POST' as const,
+        contentType: 'json' as const,
+        body: { model: '$profile.model', prompt: '$prompt' },
+        result: { imageUrlPaths: ['data.*.url'], b64JsonPaths: [] },
+      },
+    }
+    const customProfile = createDefaultOpenAIProfile({
+      id: 'custom-active-profile',
+      provider: customProvider.id,
+      apiKey: 'custom-key',
+    })
     const current = normalizeSettings({
       ...DEFAULT_SETTINGS,
-      profiles: [falProfile],
-      activeProfileId: falProfile.id,
+      customProviders: [customProvider],
+      profiles: [customProfile],
+      activeProfileId: customProfile.id,
     })
     const next = normalizeSettings({
       ...current,
@@ -78,7 +93,7 @@ describe('URL settings params', () => {
 
     expect(next.profiles).toHaveLength(2)
     expect(next.profiles.find((profile) => profile.id === next.activeProfileId)).toMatchObject({
-      provider: 'openai',
+      provider: 'copse',
       baseUrl: 'https://api.example.com/v1',
       apiKey: 'openai-key',
     })
